@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getToken, removeToken } from "@/utils/cookie";
 import router from "@/router";
+import { mockRequest } from "@/utils/mockService";
 
 //不同的功能 通过axios请求的是不同接口的地址
 //后端为微服务项目 网关 127.0.0.1:19090 该项目只负责管理端 注意此处要加上http协议
@@ -10,6 +11,10 @@ const service = axios.create({
     timeout: 5000,
     
 })
+
+if (import.meta.env.VITE_USE_MOCK === "true") {
+    service.defaults.adapter = (config) => mockRequest(config);
+}
 
 //设置响应拦截器
 service.interceptors.response.use(

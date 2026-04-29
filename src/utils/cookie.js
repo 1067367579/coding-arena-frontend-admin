@@ -4,6 +4,9 @@ const tokenKey = "OJ-Admin-Token";
 
 //请求时获取token
 export function getToken() {
+    if (import.meta.env.VITE_USE_MOCK === "true") {
+        return Cookies.get(tokenKey) || "mock-admin-token";
+    }
     return Cookies.get(tokenKey);
 }
 
