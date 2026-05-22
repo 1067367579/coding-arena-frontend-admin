@@ -59,8 +59,9 @@
 import { Plus } from "@element-plus/icons-vue"
 import Selector from "@/components/QuestionSelector.vue"
 import { getQuestionListService, delQuestionService } from "@/apis/question"
-import { reactive, ref } from "vue"
-import QuestionDrawer from "@/components/QuestionDrawer.vue"
+import { defineAsyncComponent, reactive, ref } from "vue"
+
+const QuestionDrawer = defineAsyncComponent(() => import("@/components/QuestionDrawer.vue"))
 
 const params = reactive({
   pageNum: 1,
