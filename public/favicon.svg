@@ -1,0 +1,15 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CodeFlow">
+  <rect width="64" height="64" rx="18" fill="url(#bg)"/>
+  <rect x="2" y="2" width="60" height="60" rx="16" stroke="white" stroke-opacity="0.72" stroke-width="2"/>
+  <path d="M38.8 21.5L47.2 29.9L38.8 38.3" stroke="white" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M25.2 21.5L16.8 29.9L25.2 38.3" stroke="white" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M36.4 18.8L27.6 45.2" stroke="#E7FBFF" stroke-width="4.6" stroke-linecap="round"/>
+  <path d="M21 48H43" stroke="white" stroke-opacity="0.76" stroke-width="4.2" stroke-linecap="round"/>
+  <defs>
+    <linearGradient id="bg" x1="8" y1="4" x2="58" y2="62" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#77D8FF"/>
+      <stop offset="0.48" stop-color="#69DFA4"/>
+      <stop offset="1" stop-color="#28A96D"/>
+    </linearGradient>
+  </defs>
+</svg>

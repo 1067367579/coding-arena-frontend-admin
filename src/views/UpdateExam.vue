@@ -1,455 +1,515 @@
 <template>
-    <div class="add-exam-component-box">
-      <div class="add-exam-component">
-        <!-- 竞赛信息模块 -->
-        <div class="exam-base-info-box">
-          <!-- 标题 -->
-          <div class="exam-base-title">
-            <span class="base-title">{{ type === 'edit' ? '编辑竞赛' : '添加竞赛' }}</span>
-            <span class="go-back" @click="goBack">返回</span>
+  <div class="page-exam-edit">
+    <div class="edit-container">
+      <!-- Section: Basic info -->
+      <section class="edit-section floating-card">
+        <div class="section-header">
+          <div class="header-left-group">
+            <el-button class="btn-back" :icon="ArrowLeft" circle @click="goBack" />
+            <h2 class="section-title">{{ type === 'edit' ? '编辑竞赛' : '添加竞赛' }}</h2>
           </div>
-          <!-- 基本信息 -->
-          <div class="exam-base-info">
-            <div class="group-box">
-              <div class="group-item">
-                <div class="item-label required">竞赛名称</div>
-                <div>
-                  <el-input v-model="formExam.title" style="width:420px" placeholder="请填写竞赛名称"></el-input>
-                </div>
-              </div>
-            </div>
-            <div class="group-box">
-              <div class="group-item">
-                <div class="item-label required">竞赛周期</div>
-                <div>
-                  <el-date-picker v-model="formExam.examDate" :disabledDate="disabledDate" type="datetimerange"
-                    start-placeholder="竞赛开始时间" end-placeholder="竞赛结束时间" value-format="YYYY-MM-DD HH:mm:ss" />
-                </div>
-              </div>
-            </div>
-            <div class="group-box">
-              <div class="group-item">
-                <el-button class="exam-base-info-button" type="primary" plain @click="saveBaseInfo">保存</el-button>
-              </div>
-            </div>
-          </div>
+          <span class="go-back-link" @click="goBack">返回列表</span>
         </div>
-        <!-- 添加竞赛题目 -->
-        <div class="exam-select-question-box">
-          <el-button class="exam-add-question" :icon="Plus" type="text" @click="addQuestion()">
+        
+        <div class="section-body">
+          <el-form :model="formExam" label-width="100px" class="base-info-form">
+            <el-form-item label="竞赛名称" required>
+              <el-input v-model="formExam.title" placeholder="请填写竞赛名称" style="width: 480px" />
+            </el-form-item>
+            <el-form-item label="竞赛周期" required>
+              <el-date-picker
+                v-model="formExam.examDate"
+                :disabled-date="disabledDate"
+                type="datetimerange"
+                start-placeholder="竞赛开始时间"
+                end-placeholder="竞赛结束时间"
+                value-format="YYYY-MM-DD HH:mm:ss"
+                style="width: 480px"
+              />
+            </el-form-item>
+            <el-form-item>
+              <el-button class="save-btn" type="primary" @click="saveBaseInfo">保存基本信息</el-button>
+            </el-form-item>
+          </el-form>
+        </div>
+      </section>
+
+      <!-- Section: Question list -->
+      <section class="edit-section floating-card">
+        <div class="section-header">
+          <div class="section-title-sm-container">
+            <el-icon class="title-icon"><Notebook /></el-icon>
+            <h3 class="section-title-sm">竞赛题目列表</h3>
+          </div>
+          <el-button class="add-question-btn" :icon="Plus" type="primary" @click="addQuestion()">
             添加题目
           </el-button>
-          <el-table height="38vh" :data="formExam.examQuestionList" class="question-select-list">
-            <el-table-column prop="questionId" width="180px" label="题目id" />
-            <el-table-column prop="title" :show-overflow-tooltip="true" label="题目标题" />
-            <el-table-column prop="difficulty" width="80px" label="题目难度">
+        </div>
+        <el-table height="38vh" :data="formExam.examQuestionList" class="question-table">
+          <el-table-column prop="questionId" width="180px" label="题目ID" :show-overflow-tooltip="true" />
+          <el-table-column prop="title" :show-overflow-tooltip="true" label="题目标题" />
+          <el-table-column prop="difficulty" width="100px" label="题目难度">
+            <template #default="{ row }">
+              <span v-if="row.difficulty === 1" class="diff-easy">简单</span>
+              <span v-if="row.difficulty === 2" class="diff-medium">中等</span>
+              <span v-if="row.difficulty === 3" class="diff-hard">困难</span>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="90px" fixed="right">
+            <template #default="{ row }">
+              <el-button type="primary" link class="action-danger" @click="deleteExamQuestion(formExam.examId, row.questionId)">
+                删除
+              </el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </section>
+
+      <!-- Dialog: select questions -->
+      <el-dialog v-model="dialogVisible" title="选择竞赛题目" width="60%" custom-class="select-question-dialog">
+        <div class="dialog-content">
+          <div class="dialog-filter-bar">
+            <el-form :inline="true" class="search-form-layout">
+              <el-form-item label="难度">
+                <selector v-model="params.difficulty" style="width: 120px;" placeholder="选择难度" />
+              </el-form-item>
+              <el-form-item label="名称">
+                <el-input v-model="params.title" placeholder="输入搜索题目标题" clearable @keyup.enter="onSearch" style="width: 200px;" />
+              </el-form-item>
+              <el-form-item class="dialog-button-group">
+                <el-button type="primary" @click="onSearch">搜索</el-button>
+                <el-button @click="onReset" type="info" plain>重置</el-button>
+              </el-form-item>
+            </el-form>
+          </div>
+          
+          <el-table :data="questionList" @selection-change="handleSelectionChange" height="300px" class="dialog-table">
+            <el-table-column type="selection" width="55" />
+            <el-table-column prop="questionId" label="题目ID" width="160px" :show-overflow-tooltip="true" />
+            <el-table-column prop="title" label="题目标题" :show-overflow-tooltip="true" />
+            <el-table-column prop="difficulty" label="题目难度" width="100px">
               <template #default="{ row }">
-                <div v-if="row.difficulty === 1" style="color:#3EC8FF;">简单</div>
-                <div v-if="row.difficulty === 2" style="color:#FE7909;">中等</div>
-                <div v-if="row.difficulty === 3" style="color:#FD4C40;">困难</div>
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="80px">
-              <template #default="{ row }">
-                <el-button circle type="text" @click="deleteExamQuestion(formExam.examId, row.questionId)">
-                  删除
-                </el-button>
+                <span v-if="row.difficulty === 1" class="diff-easy">简单</span>
+                <span v-if="row.difficulty === 2" class="diff-medium">中等</span>
+                <span v-if="row.difficulty === 3" class="diff-hard">困难</span>
               </template>
             </el-table-column>
           </el-table>
-        </div>
-        <!-- 题目配置模块 题目列表勾选加序号 -->
-        <div>
-          <el-dialog v-model="dialogVisible">
-            <div class="exam-list-box">
-              <div class="exam-list-title required">选择竞赛题目</div>
-              <el-form inline="true">
-                <el-form-item label="题目难度">
-                  <selector v-model="params.difficulty" style="width: 120px;"></selector>
-                </el-form-item>
-                <el-form-item label="题目名称">
-                  <el-input v-model="params.title" placeholder="请您输入要搜索的题目标题" />
-                </el-form-item>
-                <el-form-item>
-                  <el-button @click="onSearch" plain>搜索</el-button>
-                  <el-button @click="onReset" plain type="info">重置</el-button>
-                </el-form-item>
-  
-              </el-form>
-              <!-- 题目列表 select事件进行配置-->
-              <el-table :data="questionList" @select="handleRowSelect">
-                <el-table-column type="selection"></el-table-column>
-                <el-table-column prop="questionId" label="题目id" />
-                <el-table-column prop="title" label="题目标题" />
-                <el-table-column prop="difficulty" label="题目难度">
-                  <template #default="{ row }">
-                    <div v-if="row.difficulty === 1" style="color:#3EC8FF;">简单</div>
-                    <div v-if="row.difficulty === 2" style="color:#FE7909;">中等</div>
-                    <div v-if="row.difficulty === 3" style="color:#FD4C40;">困难</div>
-                  </template>
-                </el-table-column>
-              </el-table>
-              <!-- 分页区域 -->
-              <div class="exam-question-list-button">
-                <el-pagination background size="small" layout="total, sizes, prev, pager, next, jumper" :total="total"
-                  v-model:current-page="params.pageNum" v-model:page-size="params.pageSize"
-                  :page-sizes="[1, 5, 10, 15, 20]" @size-change="handleSizeChange"
-                  @current-change="handleCurrentChange" />
-                <el-button class="question-select-submit" type="primary" plain
-                  @click="submitSelectQuestion">提交</el-button>
-              </div>
+          
+          <div class="dialog-footer-layout">
+            <el-pagination
+              background
+              size="small"
+              layout="total, prev, pager, next"
+              :total="total"
+              v-model:current-page="params.pageNum"
+              v-model:page-size="params.pageSize"
+              :page-sizes="[5, 10, 15, 20]"
+              @size-change="handleSizeChange"
+              @current-change="handleCurrentChange"
+            />
+            <div class="footer-buttons">
+              <el-button @click="dialogVisible = false" type="info" plain>取消</el-button>
+              <el-button type="primary" @click="submitSelectQuestion">提交选择</el-button>
             </div>
-          </el-dialog>
+          </div>
         </div>
-  
-        <!-- 提交任务区域 -->
-        <div class="submit-box absolute">
-          <el-button type="info" plain @click="goBack">取消</el-button>
-          <el-button type="primary" plain @click="publishExam">发布竞赛</el-button>
-        </div>
+      </el-dialog>
+
+      <!-- Bottom action bar -->
+      <div class="bottom-bar">
+        <el-button type="info" plain @click="goBack">取消</el-button>
+        <el-button type="primary" @click="publishExam">发布竞赛</el-button>
       </div>
     </div>
-  </template>
-  
-  <script setup>
-  import { examAddService, addExamQuestionService, getExamDetailService, editExamService, delExamQuestionService, publishExamService} from "@/apis/exam"
-  import { getQuestionListService } from "@/apis/question"
-  import Selector from "@/components/QuestionSelector.vue"
-  import router from '@/router'
-  import { reactive, ref } from "vue"
-  import { Plus } from '@element-plus/icons-vue'
-  import { useRoute } from 'vue-router';
-  
-  const type = useRoute().query.type
-  const formExam = reactive({
-    examId: '',
-    title: '',
-    examDate: '',
-    examQuestionList: []
-  })
-  
-  const params = reactive({
-    pageNum: 1,
-    pageSize: 10,
-    difficulty: '',
-    title: '',
-    excludeIdSetStr: ''
-  })
-  
-  
-  // 返回
-  function goBack() {
-    router.go(-1)
+  </div>
+</template>
+
+<script setup>
+import { examAddService, addExamQuestionService, getExamDetailService, editExamService, delExamQuestionService, publishExamService } from "@/apis/exam"
+import { getQuestionListService } from "@/apis/question"
+import Selector from "@/components/QuestionSelector.vue"
+import router from '@/router'
+import { reactive, ref } from "vue"
+import { Plus, ArrowLeft, Notebook } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
+
+const type = useRoute().query.type
+const formExam = reactive({
+  examId: '',
+  title: '',
+  examDate: '',
+  examQuestionList: []
+})
+
+const params = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  difficulty: '',
+  title: '',
+  excludeIdSetStr: ''
+})
+
+const disabledDate = (time) => {
+  return time.getTime() < Date.now() - 8.64e7 // Cannot select days before today
+}
+
+function goBack() {
+  router.push('/oj/layout/exam')
+}
+
+async function saveBaseInfo() {
+  if (!formExam.title.trim()) {
+    ElMessage.warning('请填写竞赛名称')
+    return
   }
-  
-  async function saveBaseInfo() {
-    const fd = new FormData()
-    for (let key in formExam) {
-      if (key === 'examDate') { //特殊处理 组件只有一个参数数组 要变为两个参数
-        fd.append('startTime', formExam.examDate[0]);
-        fd.append('endTime', formExam.examDate[1]);
-      } else if (key !== 'startTime' && key !== 'endTime') {
-        //如果原来就已经有startTime endTime 就跳过 还是原始的值 不是编辑之后的值
-        fd.append(key, formExam[key])
-      }
-    }
-    try {
-        if (formExam.examId) {
-            //编辑 有examId
-            await editExamService(fd)
-        } else {
-            //没有examId
-            const addRes = await examAddService(fd);
-            formExam.examId = addRes.data.examId;
-        }
-        ElMessage.success('基本信息保存成功')
-    } catch(error) {
-        ElMessage.error(error.message)
+  if (!formExam.examDate || formExam.examDate.length !== 2) {
+    ElMessage.warning('请选择竞赛周期')
+    return
+  }
+
+  const fd = new FormData()
+  for (let key in formExam) {
+    if (key === 'examDate') {
+      fd.append('startTime', formExam.examDate[0])
+      fd.append('endTime', formExam.examDate[1])
+    } else if (key !== 'startTime' && key !== 'endTime' && key !== 'examQuestionList') {
+      fd.append(key, formExam[key])
     }
   }
-  
-  const questionList = ref([])
-  const total = ref(0)
-  async function getQuestionList() {
-    params.excludeIdSetStr = '';
-    if(formExam.examQuestionList!=null && formExam.examQuestionList.length>0) {
-        formExam.examQuestionList.forEach(element => {
-            params.excludeIdSetStr = params.excludeIdSetStr + element.questionId + ";"
-        })
+
+  try {
+    if (formExam.examId) {
+      await editExamService(fd)
+    } else {
+      const addRes = await examAddService(fd)
+      formExam.examId = addRes.data.examId
     }
+    ElMessage.success('基本信息保存成功')
+  } catch (error) {
+    ElMessage.error(error.message || '保存失败')
+  }
+}
+
+const questionList = ref([])
+const total = ref(0)
+
+async function getQuestionList() {
+  params.excludeIdSetStr = ''
+  if (formExam.examQuestionList != null && formExam.examQuestionList.length > 0) {
+    formExam.examQuestionList.forEach(element => {
+      params.excludeIdSetStr = params.excludeIdSetStr + element.questionId + ";"
+    })
+  }
+  try {
     const result = await getQuestionListService(params)
-    console.log(result)
     questionList.value = result.rows
     total.value = result.total
+  } catch (error) {
+    ElMessage.error(error.message || '获取题目列表失败')
   }
-  
-  const dialogVisible = ref(false)
-  function addQuestion() {
-    if (formExam.examId === null || formExam.examId === '') {
-      ElMessage.error('请先保存竞赛基本信息')
+}
+
+const dialogVisible = ref(false)
+function addQuestion() {
+  if (formExam.examId === null || formExam.examId === '') {
+    ElMessage.error('请先保存竞赛基本信息')
+  } else {
+    getQuestionList()
+    dialogVisible.value = true
+  }
+}
+
+function handleSizeChange() {
+  params.pageNum = 1
+  getQuestionList()
+}
+
+function handleCurrentChange() {
+  getQuestionList()
+}
+
+function onSearch() {
+  params.pageNum = 1
+  getQuestionList()
+}
+
+function onReset() {
+  params.pageNum = 1
+  params.pageSize = 10
+  params.title = ''
+  params.difficulty = ''
+  getQuestionList()
+}
+
+async function publishExam() {
+  try {
+    if (formExam.examId) {
+      await publishExamService(formExam.examId)
+      router.push("/oj/layout/exam")
+      ElMessage.success("发布成功")
     } else {
-      getQuestionList()
-      dialogVisible.value = true
+      ElMessage.error("竞赛保存之后方可发布")
     }
+  } catch (error) {
+    ElMessage.error(error.message || '发布失败')
   }
-  
-  function handleSizeChange() {
-    params.pageNum = 1
-    getQuestionList()
+}
+
+const questionIdSet = ref([])
+
+function handleSelectionChange(selection) {
+  questionIdSet.value = selection.map(item => item.questionId)
+}
+
+async function submitSelectQuestion() {
+  if (questionIdSet.value && questionIdSet.value.length < 1) {
+    ElMessage.error('请先选择要提交的题目')
+    return false
   }
-  
-  function handleCurrentChange() {
-    getQuestionList()
+  const examQ = {
+    examId: formExam.examId,
+    questionIds: questionIdSet.value
   }
-  
-  
-  function onSearch() {
-    params.pageNum = 1
-    getQuestionList()
+  try {
+    await addExamQuestionService(examQ)
+    getExamDetailById(formExam.examId)
+    dialogVisible.value = false
+    ElMessage.success('竞赛题目添加成功')
+  } catch (error) {
+    ElMessage.error(error.message || '添加题目失败')
   }
-  
-  function onReset() {
-    params.pageNum = 1
-    params.pageSize = 10
-    params.title = ''
-    params.difficulty = ''
-    getQuestionList()
-  }
-  
-  async function publishExam() {
-    try {
-        if(formExam.examId) {
-            await publishExamService(formExam.examId)
-            router.push("/oj/layout/exam")
-            ElMessage.success("发布成功")
-        } else {
-            ElMessage.error("竞赛保存之后方可发布");
-        }
-    } catch(error) {
-        ElMessage.error(error.message);
+}
+
+async function getExamDetail() {
+  try {
+    const examId = useRoute().query.examId
+    if (examId) {
+      formExam.examId = examId
+      getExamDetailById(examId)
     }
+  } catch (error) {
+    ElMessage.error(error.message || '获取竞赛详情失败')
   }
-  
-  const questionIdSet = ref([])
-  
-  function handleRowSelect(selection) {
-    questionIdSet.value = []
-    selection.forEach(element => {
-      questionIdSet.value.push(element.questionId)
-    });
-  }
-  
-  async function submitSelectQuestion() {
-    if (questionIdSet.value && questionIdSet.value.length < 1) {
-      ElMessage.error('请先选择要提交的题目')
-      return false
-    }
-    const examQ = reactive({
-      examId: formExam.examId,
-      questionIds: questionIdSet.value
-    })
-    console.log(examQ)
-    try {
-        await addExamQuestionService(examQ);
-        getExamDetailById(formExam.examId)
-        dialogVisible.value = false
-        ElMessage.success('竞赛题目添加成功')
-    }catch(error) {
-        ElMessage.error(error.message)
-    }
-  }
-  
-  async function getExamDetail() {
-    try {
-        const examId = useRoute().query.examId
-        if (examId) {
-        formExam.examId = examId
-        getExamDetailById(examId)
-        }
-    } catch(error) {
-        ElMessage.error(error.message)
-    }
-  }
-  getExamDetail()
-  
-  async function deleteExamQuestion(examId, questionId) {
+}
+getExamDetail()
+
+async function deleteExamQuestion(examId, questionId) {
+  try {
+    await ElMessageBox.confirm(
+      '确认移出该题目？',
+      '删除确认',
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+        customClass: 'apple-message-box'
+      }
+    )
     await delExamQuestionService(examId, questionId)
     getExamDetailById(examId)
     ElMessage.success('竞赛题目删除成功')
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error(error.message || error)
+    }
   }
-  
-  async function getExamDetailById(examId) {
+}
+
+async function getExamDetailById(examId) {
+  try {
     const examDetail = await getExamDetailService(examId)
     formExam.examQuestionList = []
     Object.assign(formExam, examDetail.data)
-    console.log(formExam.examQuestionList)
     formExam.examDate = [examDetail.data.startTime, examDetail.data.endTime]
+  } catch (error) {
+    ElMessage.error(error.message || '加载详情失败')
   }
+}
+</script>
+
+<style lang="scss" scoped>
+.page-exam-edit {
+  height: 100%;
+  animation: cf-slide-fade-up var(--motion-page) var(--motion-spring-soft);
+}
+
+.edit-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.edit-section {
+  padding: 24px;
+  background: var(--oj-surface) !important;
+  border-radius: var(--oj-radius);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--oj-line);
+}
+
+.header-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-back {
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: var(--oj-shadow-sm);
+  background: var(--oj-surface) !important;
+  color: var(--oj-ink);
   
-  </script>
-  
-  <style lang="scss" scoped>
-  .add-exam-component-box {
-    height: 100%;
-    overflow: hidden;
-    position: relative;
+  &:hover {
+    background: var(--oj-surface-soft) !important;
+    color: var(--oj-primary);
   }
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 750;
+  color: var(--oj-ink);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.section-title-sm-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   
-  .exam-list-box {
-    background: #fff;
-    padding: 20px 24px;
-  
-    .question-select-submit {
-      margin-left: 0;
-      margin-top: 20px;
-      width: 100%;
-    }
-  
-    .exam-list-title {
-      font-size: 14px;
-      color: rgba(0, 0, 0, 0.85);
-      position: relative;
-      padding: 15px 20px;
-      padding-top: 0;
-  
-      &.required::before {
-        position: absolute;
-        content: '*';
-        font-size: 20px;
-        color: red;
-        left: 10px;
-      }
-    }
+  .title-icon {
+    font-size: 18px;
+    color: var(--oj-primary);
   }
+}
+
+.section-title-sm {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--oj-ink);
+  margin: 0;
+}
+
+.go-back-link {
+  color: var(--oj-muted);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: color var(--motion-fast);
+
+  &:hover {
+    color: var(--oj-primary);
+  }
+}
+
+.section-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.base-info-form {
+  :deep(.el-form-item__label) {
+    justify-content: flex-start;
+    font-weight: 600;
+  }
+}
+
+.save-btn {
+  width: 180px;
+}
+
+.add-question-btn {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.question-table {
+  width: 100%;
+}
+
+/* Dialog classes */
+.dialog-filter-bar {
+  background: var(--oj-surface-soft);
+  border-radius: var(--oj-radius-sm);
+  padding: 16px;
+  margin-bottom: 16px;
   
-  .add-exam-component {
-    width: 100%;
-    background: #fff;
-    padding-bottom: 120px;
-    overflow-y: auto;
-    box-sizing: border-box;
-    height: calc(100vh - 50px);
-    margin-top: -10px;
-  
-    .exam-select-question-box {
-  
-      background: #fff;
-      border-bottom: 1px solid #fff;
-      border-radius: 2px;
-      width: 100%;
-  
-      .exam-add-question {
-        font-size: 14px;
-        float: right;
-        margin: 10px 20px 5px 0;
-      }
-  
-      .question-select-list {
-        margin: 0 0 20px 0;
-        height: 200px;
-      }
-    }
-  
-    .exam-base-info-box {
-      background: #fff;
-      border-bottom: 1px solid #fff;
-      border-radius: 2px;
-      margin-bottom: 10px;
-      width: 100%;
-      box-sizing: border-box;
-  
-      .exam-base-title {
-        width: 100%;
-        box-sizing: border-box;
-        height: 52px;
-        border-bottom: 1px solid #e9e9e9;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-  
-        .base-title {
-          font-size: 16px;
-          font-weight: 500;
-          color: #333333;
-        }
-  
-        .go-back {
-          color: #999;
-          cursor: pointer;
-        }
-      }
-  
-      .exam-base-info {
-        box-sizing: border-box;
-        border-bottom: 1px solid #e9e9e9;
-      }
-  
-      .mesage-list-content {
-        box-shadow: 0px 0px 6px 0px rgba(0, 0, 0, 0.1);
-        background-color: rgba(255, 255, 255, 1);
-        border-radius: 10px;
-        width: 1200px;
-        margin-top: 20px;
-      }
-    }
-  
-    .group-box {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      width: calc(100% - 64px);
-      margin: 24px 0;
-  
-      .group-item {
-        display: flex;
-        align-items: center;
-        width: 100%;
-  
-        .exam-base-info-button {
-          margin-left: 104px;
-          width: 420px;
-        }
-  
-        .item-label {
-          font-size: 14px;
-          font-weight: 400;
-          width: 94px;
-          text-align: left;
-          color: rgba(0, 0, 0, 0.85);
-          position: relative;
-          padding-left: 10px;
-  
-          &.required::before {
-            position: absolute;
-            content: '*';
-            font-size: 20px;
-            color: red;
-            left: 0px;
-            top: -2px;
-          }
-        }
-      }
-    }
-  
-    .submit-box {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: transparent;
-  
-      &.absolute {
-        position: absolute;
-        width: calc(100% - 48px);
-        bottom: 0;
-        background: #fff;
-        z-index: 999;
-      }
+  .search-form-layout {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    :deep(.el-form-item) {
+      margin-bottom: 0 !important;
     }
   }
-  </style>
-  
-  <style>
-  .w-e-text-container {
-    min-height: 142px;
+}
+
+.dialog-button-group {
+  margin-left: auto;
+  :deep(.el-form-item__content) {
+    display: flex;
+    gap: 8px;
   }
-  </style>
+}
+
+.dialog-table {
+  border-radius: var(--oj-radius-sm);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.dialog-footer-layout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+  
+  .footer-buttons {
+    display: flex;
+    gap: 10px;
+  }
+}
+
+/* Bottom action bar */
+.bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px 0 10px;
+}
+
+/* Difficulty colors */
+.diff-easy {
+  color: #248A3D;
+  font-weight: 600;
+}
+
+.diff-medium {
+  color: #C65D00;
+  font-weight: 600;
+}
+
+.diff-hard {
+  color: #D70015;
+  font-weight: 600;
+}
+
+.action-danger {
+  color: var(--oj-danger) !important;
+  
+  &:hover {
+    color: #ff6b6b !important;
+  }
+}
+</style>

@@ -1,0 +1,27 @@
+<svg width="192" height="64" viewBox="0 0 192 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="CodeFlow">
+  <rect x="1" y="1" width="190" height="62" rx="22" fill="url(#wordmark-bg)"/>
+  <rect x="1" y="1" width="190" height="62" rx="22" stroke="white" stroke-opacity="0.72" stroke-width="2"/>
+  <g filter="url(#icon-shadow)">
+    <rect x="14" y="12" width="40" height="40" rx="14" fill="url(#icon-bg)"/>
+    <path d="M39.8 23.5L45.8 29.5L39.8 35.5" stroke="white" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M28.2 23.5L22.2 29.5L28.2 35.5" stroke="white" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M36.4 21.8L31.6 42.2" stroke="#DDF7FF" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="M25 43H43" stroke="white" stroke-opacity="0.72" stroke-width="3.4" stroke-linecap="round"/>
+  </g>
+  <text x="66" y="39" fill="#162033" font-family="Avenir Next, SF Pro Display, Segoe UI, Helvetica Neue, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="-0.2">CodeFlow</text>
+  <defs>
+    <linearGradient id="wordmark-bg" x1="12" y1="4" x2="183" y2="66" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="0.48" stop-color="#F7FBFF"/>
+      <stop offset="1" stop-color="#EEF8F2"/>
+    </linearGradient>
+    <linearGradient id="icon-bg" x1="17" y1="12" x2="53" y2="52" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#77D8FF"/>
+      <stop offset="0.48" stop-color="#69DFA4"/>
+      <stop offset="1" stop-color="#28A96D"/>
+    </linearGradient>
+    <filter id="icon-shadow" x="4" y="6" width="60" height="60" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#1F9B70" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+</svg>

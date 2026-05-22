@@ -1,0 +1,50 @@
+<svg width="1920" height="1280" viewBox="0 0 1920 1280" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="topWash" x1="137" y1="0" x2="1762" y2="1280" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#DCEEFF" stop-opacity="0.9"/>
+      <stop offset="0.5" stop-color="#F5F8FB" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#E5F7EE" stop-opacity="0.82"/>
+    </linearGradient>
+    <linearGradient id="flowBlue" x1="-87" y1="767" x2="2005" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A84FF" stop-opacity="0"/>
+      <stop offset="0.24" stop-color="#0A84FF" stop-opacity="0.18"/>
+      <stop offset="0.58" stop-color="#64D2FF" stop-opacity="0.11"/>
+      <stop offset="1" stop-color="#0A84FF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="flowGreen" x1="-55" y1="1065" x2="1979" y2="665" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#30D158" stop-opacity="0"/>
+      <stop offset="0.34" stop-color="#30D158" stop-opacity="0.17"/>
+      <stop offset="0.72" stop-color="#00C7BE" stop-opacity="0.1"/>
+      <stop offset="1" stop-color="#30D158" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="dotGrid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.5" fill="#1D1D1F" opacity="0.055"/>
+    </pattern>
+    <filter id="softNoise" x="0" y="0" width="100%" height="100%" filterUnits="objectBoundingBox">
+      <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="3" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncA type="table" tableValues="0 0.026"/>
+      </feComponentTransfer>
+    </filter>
+    <filter id="blurLine" x="-20%" y="-80%" width="140%" height="260%">
+      <feGaussianBlur stdDeviation="10"/>
+    </filter>
+  </defs>
+  <rect width="1920" height="1280" fill="#F4F7FB"/>
+  <rect width="1920" height="1280" fill="url(#topWash)"/>
+  <rect width="1920" height="1280" fill="url(#dotGrid)" opacity="0.62"/>
+  <g opacity="0.5" filter="url(#blurLine)">
+    <path d="M-90 846C226 682 454 741 714 578C972 417 1180 307 1438 370C1645 421 1781 524 2010 450" stroke="url(#flowBlue)" stroke-width="34" stroke-linecap="round"/>
+    <path d="M-64 1018C302 827 560 936 879 738C1215 529 1515 675 1984 568" stroke="url(#flowGreen)" stroke-width="28" stroke-linecap="round"/>
+  </g>
+  <g opacity="0.18">
+    <path d="M105 946C365 808 612 815 870 670C1125 526 1338 483 1582 555" stroke="#007AFF" stroke-width="1.2"/>
+    <path d="M170 1036C420 894 650 920 934 770C1232 612 1458 666 1742 594" stroke="#34C759" stroke-width="1.2"/>
+    <path d="M1235 92C1368 166 1471 185 1619 142C1722 112 1817 128 1920 182" stroke="#FF9F0A" stroke-width="1"/>
+  </g>
+  <rect x="118" y="112" width="360" height="1.5" rx="0.75" fill="#007AFF" opacity="0.12"/>
+  <rect x="1455" y="1032" width="280" height="1.5" rx="0.75" fill="#30D158" opacity="0.14"/>
+  <rect width="1920" height="1280" fill="#FFFFFF" opacity="0.14"/>
+  <rect width="1920" height="1280" filter="url(#softNoise)" opacity="0.75"/>
+</svg>
